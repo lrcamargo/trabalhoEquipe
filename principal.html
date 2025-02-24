@@ -75,60 +75,84 @@
         }
         .botao-atividade img {
             margin-right: 10px;
-            width: 24px;
-            height: 24px;
+            width: 32px; /* Aumentei o tamanho do ícone */
+            height: 32px; /* Aumentei o tamanho do ícone */
         }
         .container {
             text-align: center;
         }
+        .atividade-escolhida {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .atividade-escolhida img {
+            width: 50px; /* Tamanho da imagem na tela de atividade escolhida */
+            height: 50px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
-    <h1>Atividade de Sobrevivência</h1>
+    <div class="container">
+        <h1>Atividade de Sobrevivência</h1>
 
-    <!-- Tela de Seleção de Atividade -->
-    <div id="selecao-atividade">
-        <p>Selecione a atividade:</p>
-        <button id="ilha-deserta" class="botao-atividade">
-            <img src="img/ilha.png" alt="Ilha Deserta">
+        <!-- Tela de Seleção de Atividade -->
+        <div id="selecao-atividade">
+            <p>Selecione a atividade:</p>
+            <button class="botao-atividade" id="ilha-deserta">
+                <img src="img/ilha.png" alt="Ilha Deserta">
                 Ilha Deserta
-        </button>
-        <button id="apocalipse-zumbi" class="botao-atividade">
-            <img src="img/zumbi.png" alt="Apocalipse Zumbi">
+            </button>
+            <button class="botao-atividade" id="apocalipse-zumbi">
+                <img src="img/zumbi.png" alt="Apocalipse Zumbi">
                 Apocalipse Zumbi
-        </button>
-    </div>
+            </button>
+        </div>
 
-    <!-- Tela de Definição do Número de Grupos -->
-    <div id="definir-grupos" class="hidden">
-        <p>Quantos grupos vão participar?</p>
-        <input type="number" id="numero-grupos" min="1" max="10">
-        <button id="confirmar-grupos">Confirmar</button>
-        <button class="botao-voltar" id="voltar-inicio">Voltar</button>
-    </div>
+        <!-- Tela de Definição do Número de Grupos -->
+        <div id="definir-grupos" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-definir">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <p>Quantos grupos vão participar?</p>
+            <input type="number" id="numero-grupos" min="1" max="10">
+            <button id="confirmar-grupos">Confirmar</button>
+            <button class="botao-voltar" id="voltar-inicio">Voltar</button>
+        </div>
 
-    <!-- Tela de Seleção do Grupo -->
-    <div id="selecao-grupo" class="hidden">
-        <p>Selecione o grupo que está escolhendo:</p>
-        <select id="grupo-selecionado"></select>
-        <button id="confirmar-grupo">Confirmar</button>
-        <div class="grupo-lista" id="lista-grupos"></div>
-        <button class="botao-voltar" id="voltar-definir-grupos">Voltar</button>
-    </div>
+        <!-- Tela de Seleção do Grupo -->
+        <div id="selecao-grupo" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-selecao">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <p>Selecione o grupo que está escolhendo:</p>
+            <select id="grupo-selecionado"></select>
+            <button id="confirmar-grupo">Confirmar</button>
+            <div class="grupo-lista" id="lista-grupos"></div>
+            <button class="botao-voltar" id="voltar-definir-grupos">Voltar</button>
+        </div>
 
-    <!-- Tela de Escolha de Itens -->
-    <div id="escolha-itens" class="hidden">
-        <p>Selecione 5 itens que você considera essenciais para a sobrevivência:</p>
-        <div id="lista-itens"></div>
-        <button id="calcular-pontuacao">Calcular Pontuação</button>
-        <button class="botao-voltar" id="voltar-selecao-grupo">Voltar</button>
-    </div>
+        <!-- Tela de Escolha de Itens -->
+        <div id="escolha-itens" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-itens">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <p>Selecione 5 itens que você considera essenciais para a sobrevivência:</p>
+            <div id="lista-itens"></div>
+            <button id="calcular-pontuacao">Calcular Pontuação</button>
+            <button class="botao-voltar" id="voltar-selecao-grupo">Voltar</button>
+        </div>
 
-    <!-- Tela de Resultados -->
-    <div id="resultados" class="hidden">
-        <h2>Resultados dos Grupos</h2>
-        <div id="resultados-grupos"></div>
-        <button class="botao-voltar" id="voltar-inicio-final">Voltar ao Início</button>
+        <!-- Tela de Resultados -->
+        <div id="resultados" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-resultados">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <h2>Resultados dos Grupos</h2>
+            <div id="resultados-grupos"></div>
+            <button class="botao-voltar" id="voltar-inicio-final">Voltar ao Início</button>
+        </div>
     </div>
 
     <script>
@@ -186,17 +210,34 @@
         const resultadosGrupos = document.getElementById('resultados-grupos');
         const listaGrupos = document.getElementById('lista-grupos');
 
+        // Elementos para exibir a atividade escolhida
+        const atividadeEscolhidaDefinir = document.getElementById('atividade-escolhida-definir');
+        const atividadeEscolhidaSelecao = document.getElementById('atividade-escolhida-selecao');
+        const atividadeEscolhidaItens = document.getElementById('atividade-escolhida-itens');
+        const atividadeEscolhidaResultados = document.getElementById('atividade-escolhida-resultados');
+
+        // Função para exibir a atividade escolhida
+        function exibirAtividadeEscolhida(container) {
+            if (atividadeSelecionada === "ilha-deserta") {
+                container.innerHTML = `<img src="img/ilha.png" alt="Ilha Deserta"> Ilha Deserta`;
+            } else if (atividadeSelecionada === "apocalipse-zumbi") {
+                container.innerHTML = `<img src="img/zumbi.png" alt="Apocalipse Zumbi"> Apocalipse Zumbi`;
+            }
+        }
+
         // Evento: Selecionar Atividade
         document.getElementById('ilha-deserta').addEventListener('click', () => {
             atividadeSelecionada = "ilha-deserta";
             selecaoAtividade.classList.add('hidden');
             definirGrupos.classList.remove('hidden');
+            exibirAtividadeEscolhida(atividadeEscolhidaDefinir);
         });
 
         document.getElementById('apocalipse-zumbi').addEventListener('click', () => {
             atividadeSelecionada = "apocalipse-zumbi";
             selecaoAtividade.classList.add('hidden');
             definirGrupos.classList.remove('hidden');
+            exibirAtividadeEscolhida(atividadeEscolhidaDefinir);
         });
 
         // Evento: Confirmar Número de Grupos
@@ -205,6 +246,7 @@
             if (numeroGrupos > 0) {
                 definirGrupos.classList.add('hidden');
                 selecaoGrupo.classList.remove('hidden');
+                exibirAtividadeEscolhida(atividadeEscolhidaSelecao);
                 // Preencher o dropdown de grupos
                 grupoSelecionado.innerHTML = '';
                 listaGrupos.innerHTML = '';
@@ -229,6 +271,7 @@
             grupoAtual = parseInt(grupoSelecionado.value);
             selecaoGrupo.classList.add('hidden');
             escolhaItens.classList.remove('hidden');
+            exibirAtividadeEscolhida(atividadeEscolhidaItens);
             // Carregar os itens da atividade selecionada
             listaItens.innerHTML = '';
             atividades[atividadeSelecionada].forEach(item => {
@@ -279,6 +322,7 @@
                     // Mostrar resultados
                     escolhaItens.classList.add('hidden');
                     resultadosDiv.classList.remove('hidden');
+                    exibirAtividadeEscolhida(atividadeEscolhidaResultados);
                     exibirResultados();
                 } else {
                     // Reiniciar para o próximo grupo
