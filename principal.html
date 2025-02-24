@@ -7,7 +7,14 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            flex-direction: column;
         }
         .item {
             padding: 10px;
@@ -53,6 +60,27 @@
             border: 1px solid #ccc;
             cursor: pointer;
         }
+        .botao-atividade {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 200px;
+            text-align: center;
+        }
+        .botao-atividade img {
+            margin-right: 10px;
+            width: 24px;
+            height: 24px;
+        }
+        .container {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -61,8 +89,14 @@
     <!-- Tela de Seleção de Atividade -->
     <div id="selecao-atividade">
         <p>Selecione a atividade:</p>
-        <button id="ilha-deserta">Ilha Deserta</button>
-        <button id="apocalipse-zumbi">Apocalipse Zumbi</button>
+        <button id="ilha-deserta" class="botao-atividade">
+            <img src="img/ilha.png" alt="Ilha Deserta">
+                Ilha Deserta
+        </button>
+        <button id="apocalipse-zumbi" class="botao-atividade">
+            <img src="img/zumbi.png" alt="Apocalipse Zumbi">
+                Apocalipse Zumbi
+        </button>
     </div>
 
     <!-- Tela de Definição do Número de Grupos -->
