@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade de Sobrevivência</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .item {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: #aaffaa;
+            border: 2px solid #00aa00;
+        }
+        #pontuacao {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .hidden {
+            display: none;
+        }
+        .grupo-resultado {
+            margin-bottom: 20px;
+        }
+        .melhor-grupo {
+            background-color: #ffcc00;
+            padding: 10px;
+            border: 2px solid #cc9900;
+        }
+        .grupo-completo {
+            background-color: #d3f8d3;
+            border: 2px solid #00aa00;
+        }
+        .grupo-lista {
+            margin-top: 10px;
+        }
+        .grupo-lista div {
+            padding: 5px;
+            margin: 2px;
+            border: 1px solid #ccc;
+        }
+        .botao-voltar {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Atividade de Sobrevivência</h1>
+
+    <!-- Tela de Seleção de Atividade -->
+    <div id="selecao-atividade">
+        <p>Selecione a atividade:</p>
+        <button id="ilha-deserta">Ilha Deserta</button>
+        <button id="apocalipse-zumbi">Apocalipse Zumbi</button>
+    </div>
+
+    <!-- Tela de Definição do Número de Grupos -->
+    <div id="definir-grupos" class="hidden">
+        <p>Quantos grupos vão participar?</p>
+        <input type="number" id="numero-grupos" min="1" max="10">
+        <button id="confirmar-grupos">Confirmar</button>
+        <button class="botao-voltar" id="voltar-inicio">Voltar</button>
+    </div>
+
+    <!-- Tela de Seleção do Grupo -->
+    <div id="selecao-grupo" class="hidden">
+        <p>Selecione o grupo que está escolhendo:</p>
+        <select id="grupo-selecionado"></select>
+        <button id="confirmar-grupo">Confirmar</button>
+        <div class="grupo-lista" id="lista-grupos"></div>
+        <button class="botao-voltar" id="voltar-definir-grupos">Voltar</button>
+    </div>
+
+    <!-- Tela de Escolha de Itens -->
+    <div id="escolha-itens" class="hidden">
+        <p>Selecione 5 itens que você considera essenciais para a sobrevivência:</p>
+        <div id="lista-itens"></div>
+        <button id="calcular-pontuacao">Calcular Pontuação</button>
+        <button class="botao-voltar" id="voltar-selecao-grupo">Voltar</button>
+    </div>
+
+    <!-- Tela de Resultados -->
+    <div id="resultados" class="hidden">
+        <h2>Resultados dos Grupos</h2>
+        <div id="resultados-grupos"></div>
+        <button class="botao-voltar" id="voltar-inicio-final">Voltar ao Início</button>
+    </div>
+
+    <script>
+        // Dados das atividades
+        const atividades = {
+            "ilha-deserta": [
+                { nome: "Canivete multifuncional", pontos: 6 },
+                { nome: "Kit de primeiros socorros", pontos: 6 },
+                { nome: "Fósforos", pontos: 5 },
+                { nome: "Garrafas de água", pontos: 5 },
+                { nome: "Machado", pontos: 5 },
+                { nome: "Corda", pontos: 4 },
+                { nome: "Bússola", pontos: 4 },
+                { nome: "Lanterna", pontos: 4 },
+                { nome: "Alimento enlatado", pontos: 4 },
+                { nome: "Espelho", pontos: 3 },
+                { nome: "Capa de chuva", pontos: 3 },
+                { nome: "Livro sobre plantas comestíveis", pontos: 2 },
+                { nome: "Rede para dormir", pontos: 2 },
+                { nome: "Rede de pesca", pontos: 2 }
+            ],
+            "apocalipse-zumbi": [
+                { nome: "Arma de fogo", pontos: 6 },
+                { nome: "Kit de primeiros socorros", pontos: 6 },
+                { nome: "Água potável", pontos: 5 },
+                { nome: "Comida enlatada", pontos: 5 },
+                { nome: "Faca de sobrevivência", pontos: 5 },
+                { nome: "Lanterna", pontos: 4 },
+                { nome: "Rádio", pontos: 4 },
+                { nome: "Mapa da cidade", pontos: 4 },
+                { nome: "Mochila", pontos: 4 },
+                { nome: "Corda", pontos: 3 },
+                { nome: "Binóculos", pontos: 3 },
+                { nome: "Livro de estratégias de defesa", pontos: 2 },
+                { nome: "Barraca", pontos: 2 },
+                { nome: "Repelente", pontos: 2 }
+            ]
+        };
+
+        // Variáveis globais
+        let atividadeSelecionada;
+        let numeroGrupos;
+        let grupoAtual;
+        let grupos = [];
+        let resultados = {};
+
+        // Elementos do DOM
+        const selecaoAtividade = document.getElementById('selecao-atividade');
+        const definirGrupos = document.getElementById('definir-grupos');
+        const selecaoGrupo = document.getElementById('selecao-grupo');
+        const escolhaItens = document.getElementById('escolha-itens');
+        const resultadosDiv = document.getElementById('resultados');
+        const listaItens = document.getElementById('lista-itens');
+        const grupoSelecionado = document.getElementById('grupo-selecionado');
+        const resultadosGrupos = document.getElementById('resultados-grupos');
+        const listaGrupos = document.getElementById('lista-grupos');
+
+        // Evento: Selecionar Atividade
+        document.getElementById('ilha-deserta').addEventListener('click', () => {
+            atividadeSelecionada = "ilha-deserta";
+            selecaoAtividade.classList.add('hidden');
+            definirGrupos.classList.remove('hidden');
+        });
+
+        document.getElementById('apocalipse-zumbi').addEventListener('click', () => {
+            atividadeSelecionada = "apocalipse-zumbi";
+            selecaoAtividade.classList.add('hidden');
+            definirGrupos.classList.remove('hidden');
+        });
+
+        // Evento: Confirmar Número de Grupos
+        document.getElementById('confirmar-grupos').addEventListener('click', () => {
+            numeroGrupos = parseInt(document.getElementById('numero-grupos').value);
+            if (numeroGrupos > 0) {
+                definirGrupos.classList.add('hidden');
+                selecaoGrupo.classList.remove('hidden');
+                // Preencher o dropdown de grupos
+                grupoSelecionado.innerHTML = '';
+                listaGrupos.innerHTML = '';
+                for (let i = 1; i <= numeroGrupos; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Grupo ${i}`;
+                    grupoSelecionado.appendChild(option);
+
+                    const grupoDiv = document.createElement('div');
+                    grupoDiv.textContent = `Grupo ${i}`;
+                    grupoDiv.id = `grupo-${i}`;
+                    listaGrupos.appendChild(grupoDiv);
+                }
+            } else {
+                alert('Por favor, insira um número válido de grupos.');
+            }
+        });
+
+        // Evento: Confirmar Grupo
+        document.getElementById('confirmar-grupo').addEventListener('click', () => {
+            grupoAtual = parseInt(grupoSelecionado.value);
+            selecaoGrupo.classList.add('hidden');
+            escolhaItens.classList.remove('hidden');
+            // Carregar os itens da atividade selecionada
+            listaItens.innerHTML = '';
+            atividades[atividadeSelecionada].forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.textContent = item.nome;
+                div.setAttribute('data-pontos', item.pontos);
+                listaItens.appendChild(div);
+            });
+        });
+
+        // Evento: Selecionar Itens e Calcular Pontuação
+        let itensSelecionados = [];
+        let pontuacaoTotal = 0;
+
+        listaItens.addEventListener('click', (event) => {
+            const item = event.target;
+            if (item.classList.contains('item')) {
+                if (itensSelecionados.length < 5 || item.classList.contains('selected')) {
+                    item.classList.toggle('selected');
+                    const pontos = parseInt(item.getAttribute('data-pontos'));
+
+                    if (item.classList.contains('selected')) {
+                        itensSelecionados.push(item.textContent);
+                        pontuacaoTotal += pontos;
+                    } else {
+                        itensSelecionados = itensSelecionados.filter(selectedItem => selectedItem !== item.textContent);
+                        pontuacaoTotal -= pontos;
+                    }
+                }
+            }
+        });
+
+        document.getElementById('calcular-pontuacao').addEventListener('click', () => {
+            if (itensSelecionados.length === 5) {
+                // Salvar os resultados do grupo atual
+                resultados[grupoAtual] = {
+                    itens: itensSelecionados,
+                    pontuacao: pontuacaoTotal
+                };
+
+                // Destacar o grupo como completo
+                const grupoDiv = document.getElementById(`grupo-${grupoAtual}`);
+                grupoDiv.classList.add('grupo-completo');
+
+                // Verificar se todos os grupos já escolheram
+                if (Object.keys(resultados).length === numeroGrupos) {
+                    // Mostrar resultados
+                    escolhaItens.classList.add('hidden');
+                    resultadosDiv.classList.remove('hidden');
+                    exibirResultados();
+                } else {
+                    // Reiniciar para o próximo grupo
+                    itensSelecionados = [];
+                    pontuacaoTotal = 0;
+                    selecaoGrupo.classList.remove('hidden');
+                    escolhaItens.classList.add('hidden');
+                }
+            } else {
+                alert('Por favor, selecione exatamente 5 itens.');
+            }
+        });
+
+        // Função para exibir os resultados
+        function exibirResultados() {
+            resultadosGrupos.innerHTML = '';
+            let melhorPontuacao = 0;
+            let melhorGrupo = null;
+
+            for (const [grupo, dados] of Object.entries(resultados)) {
+                const div = document.createElement('div');
+                div.className = 'grupo-resultado';
+                div.innerHTML = `<strong>Grupo ${grupo}:</strong> ${dados.pontuacao} pontos<br>Itens: ${dados.itens.join(', ')}`;
+                resultadosGrupos.appendChild(div);
+
+                if (dados.pontuacao > melhorPontuacao) {
+                    melhorPontuacao = dados.pontuacao;
+                    melhorGrupo = grupo;
+                }
+            }
+
+            // Destacar o melhor grupo
+            if (melhorGrupo) {
+                const melhorDiv = document.createElement('div');
+                melhorDiv.className = 'melhor-grupo';
+                melhorDiv.textContent = `Melhor Grupo: Grupo ${melhorGrupo} com ${melhorPontuacao} pontos!`;
+                resultadosGrupos.appendChild(melhorDiv);
+            }
+        }
+
+        // Botão Voltar para a tela inicial
+        document.getElementById('voltar-inicio').addEventListener('click', () => {
+            definirGrupos.classList.add('hidden');
+            selecaoAtividade.classList.remove('hidden');
+        });
+
+        document.getElementById('voltar-definir-grupos').addEventListener('click', () => {
+            selecaoGrupo.classList.add('hidden');
+            definirGrupos.classList.remove('hidden');
+        });
+
+        document.getElementById('voltar-selecao-grupo').addEventListener('click', () => {
+            escolhaItens.classList.add('hidden');
+            selecaoGrupo.classList.remove('hidden');
+        });
+
+        document.getElementById('voltar-inicio-final').addEventListener('click', () => {
+            resultadosDiv.classList.add('hidden');
+            selecaoAtividade.classList.remove('hidden');
+            // Reiniciar variáveis
+            atividadeSelecionada = null;
+            numeroGrupos = null;
+            grupoAtual = null;
+            grupos = [];
+            resultados = {};
+            listaGrupos.innerHTML = '';
+        });
+    </script>
+</body>
+</html>
