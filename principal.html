@@ -91,6 +91,439 @@
             height: 50px;
             vertical-align: middle;
         }
+        .resultado-mensagem {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Atividade de Sobrevivência</h1>
+
+        <!-- Tela de Seleção de Atividade -->
+        <div id="selecao-atividade">
+            <p>Selecione a atividade:</p>
+            <button class="botao-atividade" id="ilha-deserta">
+                <img src="img/ilha-deserta.png" alt="Ilha Deserta">
+                Ilha Deserta
+            </button>
+            <button class="botao-atividade" id="apocalipse-zumbi">
+                <img src="img/apocalipse-zumbi.png" alt="Apocalipse Zumbi">
+                Apocalipse Zumbi
+            </button>
+        </div>
+
+        <!-- Tela de Definição do Número de Grupos -->
+        <div id="definir-grupos" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-definir">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <p>Quantos grupos vão participar?</p>
+            <input type="number" id="numero-grupos" min="1" max="10">
+            <button id="confirmar-grupos">Confirmar</button>
+            <button class="botao-voltar" id="voltar-inicio">Voltar</button>
+        </div>
+
+        <!-- Tela de Seleção do Grupo -->
+        <div id="selecao-grupo" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-selecao">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <p>Selecione o grupo que está escolhendo:</p>
+            <select id="grupo-selecionado"></select>
+            <button id="confirmar-grupo">Confirmar</button>
+            <div class="grupo-lista" id="lista-grupos"></div>
+            <button class="botao-voltar" id="voltar-definir-grupos">Voltar</button>
+        </div>
+
+        <!-- Tela de Escolha de Itens -->
+        <div id="escolha-itens" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-itens">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <p>Selecione 5 itens que você considera essenciais para a sobrevivência:</p>
+            <div id="lista-itens"></div>
+            <button id="calcular-pontuacao">Calcular Pontuação</button>
+            <button class="botao-voltar" id="voltar-selecao-grupo">Voltar</button>
+        </div>
+
+        <!-- Tela de Resultados -->
+        <div id="resultados" class="hidden">
+            <div class="atividade-escolhida" id="atividade-escolhida-resultados">
+                <!-- Aqui será exibida a atividade escolhida -->
+            </div>
+            <h2>Resultados dos Grupos</h2>
+            <div id="resultados-grupos"></div>
+            <div id="resultado-mensagem" class="resultado-mensagem"></div>
+            <button class="botao-voltar" id="voltar-inicio-final">Voltar ao Início</button>
+        </div>
+    </div>
+
+    <script>
+        // Dados das atividades
+        const atividades = {
+            "ilha-deserta": [
+                { nome: "Canivete multifuncional", pontos: 6 },
+                { nome: "Kit de primeiros socorros", pontos: 6 },
+                { nome: "Fósforos", pontos: 5 },
+                { nome: "Garrafas de água", pontos: 5 },
+                { nome: "Machado", pontos: 5 },
+                { nome: "Corda", pontos: 4 },
+                { nome: "Bússola", pontos: 4 },
+                { nome: "Lanterna", pontos: 4 },
+                { nome: "Alimento enlatado", pontos: 4 },
+                { nome: "Espelho", pontos: 3 },
+                { nome: "Capa de chuva", pontos: 3 },
+                { nome: "Livro sobre plantas comestíveis", pontos: 2 },
+                { nome: "Rede para dormir", pontos: 2 },
+                { nome: "Rede de pesca", pontos: 2 }
+            ],
+            "apocalipse-zumbi": [
+                { nome: "Arma de fogo", pontos: 6 },
+                { nome: "Kit de primeiros socorros", pontos: 6 },
+                { nome: "Água potável", pontos: 5 },
+                { nome: "Comida enlatada", pontos: 5 },
+                { nome: "Faca de sobrevivência", pontos: 5 },
+                { nome: "Lanterna", pontos: 4 },
+                { nome: "Rádio", pontos: 4 },
+                { nome: "Mapa da cidade", pontos: 4 },
+                { nome: "Mochila", pontos: 4 },
+                { nome: "Corda", pontos: 3 },
+                { nome: "Binóculos", pontos: 3 },
+                { nome: "Livro de estratégias de defesa", pontos: 2 },
+                { nome: "Barraca", pontos: 2 },
+                { nome: "Repelente", pontos: 2 }
+            ]
+        };
+
+        // Variáveis globais
+        let atividadeSelecionada;
+        let numeroGrupos;
+        let grupoAtual;
+        let grupos = [];
+        let resultados = {};
+
+        // Elementos do DOM
+        const selecaoAtividade = document.getElementById('selecao-atividade');
+        const definirGrupos = document.getElementById('definir-grupos');
+        const selecaoGrupo = document.getElementById('selecao-grupo');
+        const escolhaItens = document.getElementById('escolha-itens');
+        const resultadosDiv = document.getElementById('resultados');
+        const listaItens = document.getElementById('lista-itens');
+        const grupoSelecionado = document.getElementById('grupo-selecionado');
+        const resultadosGrupos = document.getElementById('resultados-grupos');
+        const listaGrupos = document.getElementById('lista-grupos');
+        const resultadoMensagem = document.getElementById('resultado-mensagem');
+
+        // Elementos para exibir a atividade escolhida
+        const atividadeEscolhidaDefinir = document.getElementById('atividade-escolhida-definir');
+        const atividadeEscolhidaSelecao = document.getElementById('atividade-escolhida-selecao');
+        const atividadeEscolhidaItens = document.getElementById('atividade-escolhida-itens');
+        const atividadeEscolhidaResultados = document.getElementById('atividade-escolhida-resultados');
+
+        // Função para exibir a atividade escolhida
+        function exibirAtividadeEscolhida(container) {
+            if (atividadeSelecionada === "ilha-deserta") {
+                container.innerHTML = `<img src="img/ilha-deserta.png" alt="Ilha Deserta"> Ilha Deserta`;
+            } else if (atividadeSelecionada === "apocalipse-zumbi") {
+                container.innerHTML = `<img src="img/apocalipse-zumbi.png" alt="Apocalipse Zumbi"> Apocalipse Zumbi`;
+            }
+        }
+
+        // Função para exibir a mensagem de resultado
+        function exibirMensagemResultado(pontuacao) {
+            if (atividadeSelecionada === "ilha-deserta") {
+                if (pontuacao >= 30) {
+                    resultadoMensagem.innerHTML = "🏝 30-36 pontos: 🌟 Náufragos experientes!<br>Seu grupo fez escolhas inteligentes e está bem preparado para sobreviver na ilha. Com os recursos certos, vocês podem garantir abrigo, comida, água e até aumentar suas chances de resgate!";
+                } else if (pontuacao >= 25) {
+                    resultadoMensagem.innerHTML = "⛵ 25-29 pontos: ✅ Sobrevivência garantida (por um tempo)!<br>Boas escolhas! Vocês têm recursos para se manterem vivos, mas podem enfrentar desafios caso fiquem muito tempo na ilha. Faltou algo essencial?";
+                } else if (pontuacao >= 20) {
+                    resultadoMensagem.innerHTML = "🌊 20-24 pontos: 🤔 Dá para sobreviver, mas com dificuldades...<br>Vocês podem sobreviver, mas precisarão de muita criatividade e sorte! Alguns itens essenciais foram esquecidos ou poderiam ter sido melhores.";
+                } else if (pontuacao >= 15) {
+                    resultadoMensagem.innerHTML = "🌴 15-19 pontos: ⚠️ Por um fio...<br>A sobrevivência será difícil! Faltam recursos importantes, e vocês terão que improvisar bastante para conseguir comida, água e abrigo.";
+                } else {
+                    resultadoMensagem.innerHTML = "🆘 Abaixo de 15 pontos: 🚨 Ilhados sem esperança...<br>As escolhas não foram boas. Sem recursos essenciais, suas chances de sobrevivência são mínimas. Se o resgate não chegar logo, a situação pode se complicar muito!";
+                }
+            } else if (atividadeSelecionada === "apocalipse-zumbi") {
+                if (pontuacao >= 30) {
+                    resultadoMensagem.innerHTML = "🧟‍♂️ 30-36 pontos: 🏆 Líderes da resistência!<br>Seu grupo está preparado para enfrentar o apocalipse! Com os recursos certos, vocês podem se defender, garantir comida, água e encontrar um local seguro para se estabelecer. Suas chances de longo prazo são altas!";
+                } else if (pontuacao >= 25) {
+                    resultadoMensagem.innerHTML = "🔫 25-29 pontos: 🔥 Sobreviventes experientes.<br>Boas escolhas! Vocês estão bem equipados e têm boas chances de sobreviver, mas podem enfrentar dificuldades caso fiquem sem suprimentos ou precisem fugir rapidamente.";
+                } else if (pontuacao >= 20) {
+                    resultadoMensagem.innerHTML = "⚔️ 20-24 pontos: 😬 Sobreviventes inexperientes.<br>Vocês podem sobreviver, mas será difícil! Algumas escolhas foram questionáveis, e podem faltar itens essenciais para a sobrevivência a longo prazo. Precisarão contar com a sorte!";
+                } else if (pontuacao >= 15) {
+                    resultadoMensagem.innerHTML = "🚷 15-19 pontos: ⚠️ Alvo fácil... cuidado!<br>Vocês podem conseguir sobreviver, mas sem planejamento a situação se tornará perigosa. Faltam itens essenciais, e os zumbis podem encontrar vocês mais rápido do que imaginam!";
+                } else {
+                    resultadoMensagem.innerHTML = "☠️ Abaixo de 15 pontos: 🚨 Foram de base...<br>As escolhas não foram boas. Sem suprimentos adequados, vocês terão dificuldades para se manter vivos. Se os zumbis não pegarem vocês, a fome e a sede podem acabar sendo fatais.";
+                }
+            }
+        }
+
+        // Evento: Selecionar Atividade
+        document.getElementById('ilha-deserta').addEventListener('click', () => {
+            atividadeSelecionada = "ilha-deserta";
+            selecaoAtividade.classList.add('hidden');
+            definirGrupos.classList.remove('hidden');
+            exibirAtividadeEscolhida(atividadeEscolhidaDefinir);
+        });
+
+        document.getElementById('apocalipse-zumbi').addEventListener('click', () => {
+            atividadeSelecionada = "apocalipse-zumbi";
+            selecaoAtividade.classList.add('hidden');
+            definirGrupos.classList.remove('hidden');
+            exibirAtividadeEscolhida(atividadeEscolhidaDefinir);
+        });
+
+        // Evento: Confirmar Número de Grupos
+        document.getElementById('confirmar-grupos').addEventListener('click', () => {
+            numeroGrupos = parseInt(document.getElementById('numero-grupos').value);
+            if (numeroGrupos > 0) {
+                definirGrupos.classList.add('hidden');
+                selecaoGrupo.classList.remove('hidden');
+                exibirAtividadeEscolhida(atividadeEscolhidaSelecao);
+                // Preencher o dropdown de grupos
+                grupoSelecionado.innerHTML = '';
+                listaGrupos.innerHTML = '';
+                for (let i = 1; i <= numeroGrupos; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Grupo ${i}`;
+                    grupoSelecionado.appendChild(option);
+
+                    const grupoDiv = document.createElement('div');
+                    grupoDiv.textContent = `Grupo ${i}`;
+                    grupoDiv.id = `grupo-${i}`;
+                    listaGrupos.appendChild(grupoDiv);
+                }
+            } else {
+                alert('Por favor, insira um número válido de grupos.');
+            }
+        });
+
+        // Evento: Confirmar Grupo
+        document.getElementById('confirmar-grupo').addEventListener('click', () => {
+            grupoAtual = parseInt(grupoSelecionado.value);
+            selecaoGrupo.classList.add('hidden');
+            escolhaItens.classList.remove('hidden');
+            exibirAtividadeEscolhida(atividadeEscolhidaItens);
+            // Carregar os itens da atividade selecionada
+            listaItens.innerHTML = '';
+            atividades[atividadeSelecionada].forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.textContent = item.nome;
+                div.setAttribute('data-pontos', item.pontos);
+                listaItens.appendChild(div);
+            });
+        });
+
+        // Evento: Selecionar Itens e Calcular Pontuação
+        let itensSelecionados = [];
+        let pontuacaoTotal = 0;
+
+        listaItens.addEventListener('click', (event) => {
+            const item = event.target;
+            if (item.classList.contains('item')) {
+                if (itensSelecionados.length < 5 || item.classList.contains('selected')) {
+                    item.classList.toggle('selected');
+                    const pontos = parseInt(item.getAttribute('data-pontos'));
+
+                    if (item.classList.contains('selected')) {
+                        itensSelecionados.push(item.textContent);
+                        pontuacaoTotal += pontos;
+                    } else {
+                        itensSelecionados = itensSelecionados.filter(selectedItem => selectedItem !== item.textContent);
+                        pontuacaoTotal -= pontos;
+                    }
+                }
+            }
+        });
+
+        document.getElementById('calcular-pontuacao').addEventListener('click', () => {
+            if (itensSelecionados.length === 5) {
+                // Salvar os resultados do grupo atual
+                resultados[grupoAtual] = {
+                    itens: itensSelecionados,
+                    pontuacao: pontuacaoTotal
+                };
+
+                // Destacar o grupo como completo
+                const grupoDiv = document.getElementById(`grupo-${grupoAtual}`);
+                grupoDiv.classList.add('grupo-completo');
+
+                // Verificar se todos os grupos já escolheram
+                if (Object.keys(resultados).length === numeroGrupos) {
+                    // Mostrar resultados
+                    escolhaItens.classList.add('hidden');
+                    resultadosDiv.classList.remove('hidden');
+                    exibirAtividadeEscolhida(atividadeEscolhidaResultados);
+                    exibirResultados();
+                } else {
+                    // Reiniciar para o próximo grupo
+                    itensSelecionados = [];
+                    pontuacaoTotal = 0;
+                    selecaoGrupo.classList.remove('hidden');
+                    escolhaItens.classList.add('hidden');
+                }
+            } else {
+                alert('Por favor, selecione exatamente 5 itens.');
+            }
+        });
+
+        // Função para exibir os resultados
+        function exibirResultados() {
+            resultadosGrupos.innerHTML = '';
+            let melhorPontuacao = 0;
+            let melhorGrupo = null;
+
+            for (const [grupo, dados] of Object.entries(resultados)) {
+                const div = document.createElement('div');
+                div.className = 'grupo-resultado';
+                div.innerHTML = `<strong>Grupo ${grupo}:</strong> ${dados.pontuacao} pontos<br>Itens: ${dados.itens.join(', ')}`;
+                resultadosGrupos.appendChild(div);
+
+                if (dados.pontuacao > melhorPontuacao) {
+                    melhorPontuacao = dados.pontuacao;
+                    melhorGrupo = grupo;
+                }
+            }
+
+            // Destacar o melhor grupo
+            if (melhorGrupo) {
+                const melhorDiv = document.createElement('div');
+                melhorDiv.className = 'melhor-grupo';
+                melhorDiv.textContent = `Melhor Grupo: Grupo ${melhorGrupo} com ${melhorPontuacao} pontos!`;
+                resultadosGrupos.appendChild(melhorDiv);
+            }
+
+            // Exibir a mensagem de resultado
+            exibirMensagemResultado(melhorPontuacao);
+        }
+
+        // Botão Voltar para a tela inicial
+        document.getElementById('voltar-inicio').addEventListener('click', () => {
+            definirGrupos.classList.add('hidden');
+            selecaoAtividade.classList.remove('hidden');
+        });
+
+        document.getElementById('voltar-definir-grupos').addEventListener('click', () => {
+            selecaoGrupo.classList.add('hidden');
+            definirGrupos.classList.remove('hidden');
+        });
+
+        document.getElementById('voltar-selecao-grupo').addEventListener('click', () => {
+            escolhaItens.classList.add('hidden');
+            selecaoGrupo.classList.remove('hidden');
+        });
+
+        document.getElementById('voltar-inicio-final').addEventListener('click', () => {
+            resultadosDiv.classList.add('hidden');
+            selecaoAtividade.classList.remove('hidden');
+            // Reiniciar variáveis
+            atividadeSelecionada = null;
+            numeroGrupos = null;
+            grupoAtual = null;
+            grupos = [];
+            resultados = {};
+            listaGrupos.innerHTML = '';
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade de Sobrevivência</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            flex-direction: column;
+        }
+        .item {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .selected {
+            background-color: #aaffaa;
+            border: 2px solid #00aa00;
+        }
+        #pontuacao {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+        .hidden {
+            display: none;
+        }
+        .grupo-resultado {
+            margin-bottom: 20px;
+        }
+        .melhor-grupo {
+            background-color: #ffcc00;
+            padding: 10px;
+            border: 2px solid #cc9900;
+        }
+        .grupo-completo {
+            background-color: #d3f8d3;
+            border: 2px solid #00aa00;
+        }
+        .grupo-lista {
+            margin-top: 10px;
+        }
+        .grupo-lista div {
+            padding: 5px;
+            margin: 2px;
+            border: 1px solid #ccc;
+        }
+        .botao-voltar {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .botao-atividade {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+            padding: 15px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 200px;
+            text-align: center;
+        }
+        .botao-atividade img {
+            margin-right: 10px;
+            width: 32px; /* Aumentei o tamanho do ícone */
+            height: 32px; /* Aumentei o tamanho do ícone */
+        }
+        .container {
+            text-align: center;
+        }
+        .atividade-escolhida {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .atividade-escolhida img {
+            width: 50px; /* Tamanho da imagem na tela de atividade escolhida */
+            height: 50px;
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -170,6 +603,7 @@
                 { nome: "Alimento enlatado", pontos: 4 },
                 { nome: "Espelho", pontos: 3 },
                 { nome: "Capa de chuva", pontos: 3 },
+                { nome: "Pote de sal", pontos: 3 },
                 { nome: "Livro sobre plantas comestíveis", pontos: 2 },
                 { nome: "Rede para dormir", pontos: 2 },
                 { nome: "Rede de pesca", pontos: 2 }
@@ -186,6 +620,7 @@
                 { nome: "Mochila", pontos: 4 },
                 { nome: "Corda", pontos: 3 },
                 { nome: "Binóculos", pontos: 3 },
+                { nome: "Pé de Cabra", pontos: 3 },
                 { nome: "Livro de estratégias de defesa", pontos: 2 },
                 { nome: "Barraca", pontos: 2 },
                 { nome: "Repelente", pontos: 2 }
